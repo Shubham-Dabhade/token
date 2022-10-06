@@ -1,13 +1,25 @@
 import React, { useState } from "react";
-import { Principal } from"@dfinity/principal";  //importing the principal mmodule but unlike in .mo file where the file is imported from the motoko base file we import it from the dependency that we downloaded
-
+import { Principal } from "@dfinity/principal";  //importing the principal mmodule but unlike in .mo file where the file is imported from the motoko base file we import it from the dependency that we downloaded
+import { token } from "../../../declarations/token";
 
 function Balance() {
 
   const [inputValue,setInput]=useState("");
-  
-  function handleClick() {
-    console.log(inputValue);
+  const [balanceResult,setBalance]=useState("");
+  const [symbol1,setSymbol]=useState("");
+  const [isHidden,setHidden]=useState(true);
+
+  async function handleClick() {
+    // console.log(inputValue);
+    const principal = Principal.fromText(inputValue);//using this we have converted the input value in Principal type and we will sent it into the backend motko function
+    const balance = await token.balanceOf(principal);
+    //to show the balance on the frontend the return value will look like this 1_000_000_000 which is Nat so convert it into string
+    setBalance(balance.toLocaleString());
+
+    const symbol= await token.getSymbol();
+    setSymbol(symbol);
+
+    setHidden(false);
   }
 
   function handleChange(e){
@@ -35,7 +47,7 @@ function Balance() {
           Check Balance
         </button>
       </p>
-      <p>This account has a balance of XYZ.</p>
+      <p hidden={isHidden}>This account has a balance of {balanceResult} {symbol1}.</p>
     </div>
   );
 }

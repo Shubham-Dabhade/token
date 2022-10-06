@@ -21,7 +21,7 @@ actor Token{
 
     //creating a query to check the balance of a user
 
-    
+
     //we are sending the principal id as the input and we created a async function which returns Nat value
     public query func balanceOf(who:Principal): async Nat {
         //setting the balance ,creating a switch statement which takes the principal as input and set the value to .get(Principal)
@@ -34,6 +34,13 @@ actor Token{
         };
         //return the balance 
         return balance;
-    }
+    };
+
+
+    //creating a query function for sending the symbol of our Token
+    public query func getSymbol(): async Text{
+        return symbol;
+    };
+
 
 }
