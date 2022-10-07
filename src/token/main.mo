@@ -1,10 +1,11 @@
 import Principal "mo:base/Principal";
 import HashMap "mo:base/HashMap";
+import Debug "mo:base/Debug";
 
 actor Token{
 
     //to assign the principal value of the user
-    var owner =Principal.fromText("55evk-4xtoy-apf6s-eoore-qixkm-tmjif-hpwoz-wa3qq-vwnql-77qpr-tqe");//using the base principal id which is in the form string so to convert it in principal ID
+    var owner =Principal.fromText("k6lhb-p544l-cvdew-5ikyp-ygtif-drt7e-uo42t-uac4v-falyq-z2ujt-gqe");//using the base principal id which is in the form string so to convert it in principal ID
 
 
     var totalSupply:Nat= 1000000000;//to keep track of total supply of our coin and we have set the default value as 1 billion
@@ -42,5 +43,47 @@ actor Token{
         return symbol;
     };
 
+
+
+    //creating a fucntion to pay out the required amount for certain users from the faucet
+    // we will use the shared method as it will return the principal id of the user which requested/used this fucntion
+    public shared(msg) func payOut() : async Text{
+        // Debug.print(debug_show(msg.caller));
+
+        //to check whether the same user is not asking for the URSA tokens
+        if(balances.get(msg.caller)==null){
+            let amount = 10000;
+            let result = await transfer(msg.caller,amount);
+            return "Success";
+        }
+        else{
+            return "Already Claimed";
+        }
+    };
+
+
+    //creating a transfer function for tranfering the amount between the users
+
+    public shared(msg) func transfer(to:Principal,amount:Nat): async Text{
+
+        let fromBalance=await balanceOf(msg.caller);
+
+        if(fromBalance > amount){
+            //deducting the amount from the total balance of the transferer
+            let newFromBalance:Nat= fromBalance-amount;
+            balances.put(msg.caller,newFromBalance);
+
+            //incrementing the amount on the tranferTo account
+            let toBalance= await balanceOf(to);
+            let newToBalance = toBalance+amount;
+            balances.put(to,newToBalance);
+
+            return "Success";
+        }
+        else{
+            return "Insufficinet Balance";
+        }
+
+    };
 
 }
