@@ -1,6 +1,7 @@
 import Principal "mo:base/Principal";
 import HashMap "mo:base/HashMap";
 import Debug "mo:base/Debug";
+import Iter "mo:base/Iter";
 
 actor Token{
 
@@ -12,17 +13,23 @@ actor Token{
     var symbol:Text="URSA";// making a symbol for our token calliing it"URSA TOKEN"
     
 
+    //creating a stable varibale to store the hashmaps before and after upgrade
+
+    private stable var balanceEntries :[(Principal,Nat)]=[];
+
+
+
     //creating a hash map to store the balances of the user/canisters balance of the token
 
-    var balances = HashMap.HashMap<Principal,Nat>(1, Principal.equal,Principal.hash);  //it will take 3 inputs 1)the inital size,2)the method that take user key and find the same key in the hashTable(luckily as the keys are Principal we have a method call 'equal' to check)
+    private var balances = HashMap.HashMap<Principal,Nat>(1, Principal.equal,Principal.hash);  //it will take 3 inputs 1)the inital size,2)the method that take user key and find the same key in the hashTable(luckily as the keys are Principal we have a method call 'equal' to check)
     //3)how to hash the key and as the keys are principals we have its method called .hash which hashes the principal key
-
-    balances.put(owner,totalSupply);
+        if(balances.size() < 1){
+        balances.put(owner,totalSupply);
+    };
+    
 
 
     //creating a query to check the balance of a user
-
-
     //we are sending the principal id as the input and we created a async function which returns Nat value
     public query func balanceOf(who:Principal): async Nat {
         //setting the balance ,creating a switch statement which takes the principal as input and set the value to .get(Principal)
@@ -85,5 +92,22 @@ actor Token{
         }
 
     };
+
+
+
+
+    //creating pre/post upgrade method
+
+    system func preupgrade(){
+        balanceEntries:=Iter.toArray(balances.entries());
+    };
+
+    system func postupgrade(){
+        balances:= HashMap.fromIter<Principal,Nat>(balanceEntries.vals(),1,Principal.equal,Principal.hash);  
+        if(balances.size() < 1){
+            balances.put(owner,totalSupply);
+        }
+    };
+
 
 }
